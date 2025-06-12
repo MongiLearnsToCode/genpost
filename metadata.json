@@ -1,0 +1,6 @@
+{
+  "name": "SoloSpark AI Caption Generator",
+  "description": "A React application that uses the Gemini API to generate social media caption suggestions for solopreneurs.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
