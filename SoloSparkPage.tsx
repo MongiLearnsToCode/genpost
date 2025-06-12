@@ -86,7 +86,7 @@ const SoloSparkPage: React.FC = () => {
   return (
     <div className="w-full px-4">
       <header className="my-10 text-center">
-        <h1 className="font-['Montserrat'] text-4xl md:text-5xl font-bold text-[var(--color-deep-forest)]">SoloSpark</h1>
+        <h1 className="font-['Montserrat'] text-4xl md:text-5xl font-bold text-[var(--color-deep-forest)]">GenPost</h1>
         <p className="font-['Lora'] text-lg md:text-xl text-[var(--color-charcoal-gray)] mt-3">AI-Powered Social Media Assistant</p>
       </header>
 
@@ -159,7 +159,7 @@ const SoloSparkPage: React.FC = () => {
 
       <footer className="text-center mt-16 py-8 border-t border-[var(--color-charcoal-gray)]/20">
         <p className="text-sm text-[var(--color-charcoal-gray)]/80 font-['Lora']">
-          &copy; ${new Date().getFullYear()} SoloSpark. Powered by Gemini API.
+          &copy; ${new Date().getFullYear()} GenPost. Powered by Gemini API.
         </p>
       </footer>
     </div>
