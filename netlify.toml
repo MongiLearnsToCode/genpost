@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[context.production.environment]
+  GEMINI_API_KEY = "AIzaSyCsVH9BGmsZexjE86yQ8n6_Dh8zjia_FO4"
+
+[context.deploy-preview.environment]
+  GEMINI_API_KEY = "AIzaSyCsVH9BGmsZexjE86yQ8n6_Dh8zjia_FO4"
