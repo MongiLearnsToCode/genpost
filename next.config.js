@@ -7,4 +7,11 @@ const nextConfig = {
   },
 };
 
+// Adjust configuration based on deployment target
+if (process.env.NETLIFY === 'true') {
+  // For Netlify, use static exports
+  nextConfig.output = 'export';
+  nextConfig.distDir = 'out';
+}
+
 module.exports = nextConfig;

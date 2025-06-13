@@ -1,6 +1,6 @@
 [build]
-  command = "npm run build"
-  publish = "dist"
+  command = "NETLIFY=true npm run build"
+  publish = "out"
 
 [context.production.environment]
   GEMINI_API_KEY = "AIzaSyCsVH9BGmsZexjE86yQ8n6_Dh8zjia_FO4"
