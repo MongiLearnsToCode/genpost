@@ -7,8 +7,12 @@ import BasicAnalytics from '@/components/BasicAnalytics';
 import PostManager from '@/components/PostManager';
 import PostModal from '@/components/PostModal';
 import { ManagedPost, BaseImage, PostStatus, PlatformID, PlatformSpecificPostContent } from '@/types';
-import { PLATFORMS, PlusCircleIcon } from '@/constants';
+import { PLATFORMS } from '@/constants';
 import Button from '@/components/Button';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { PlusCircle } from 'lucide-react';
 
 const GenPostPage: React.FC = () => {
   const [allPosts, setAllPosts] = useState<ManagedPost[]>([]);
@@ -87,60 +91,90 @@ const GenPostPage: React.FC = () => {
   return (
     <div className="w-full px-4">
       <header className="my-10 text-center">
-        <h1 className="font-['Montserrat'] text-4xl md:text-5xl font-bold text-[var(--color-deep-forest)]">GenPost</h1>
-        <p className="font-['Lora'] text-lg md:text-xl text-[var(--color-charcoal-gray)] mt-3">AI-Powered Social Media Assistant</p>
+        <h1 className="font-['Montserrat'] text-4xl md:text-5xl font-bold text-primary">GenPost</h1>
+        <p className="font-['Lora'] text-lg md:text-xl text-muted-foreground mt-3">AI-Powered Social Media Assistant</p>
       </header>
 
       {/* Button to open PostModal directly for a brand new post (not pre-composed in PostEditor) */}
-      <div className="mb-8 flex justify-end">
+      <div className="mb-8 flex justify-between items-center">
+        <ThemeToggle />
         <Button onClick={() => handleOpenPostModal(null, false)} variant="primary" className="flex items-center"> 
-            <PlusCircleIcon className="h-5 w-5 mr-2" /> Quick Add Post (Modal)
+            <PlusCircle className="h-5 w-5 mr-2" /> Quick Add Post
         </Button>
       </div>
       
       <div className="lg:flex lg:gap-x-8">
         <div className="lg:w-1/3 mb-8 lg:mb-0">
-          <PostEditor 
-            onInitiatePostCreation={(initialData) => {
-                 const newPostShell: ManagedPost = {
-                    id: crypto.randomUUID(), // Temp ID
-                    status: PostStatus.Draft, // Initial status before modal
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    scheduledDate: null,
-                    scheduledTime: null,
-                    platforms: Array.from(initialData.selectedPlatforms),
-                    content: initialData.platformSpecificContentData, // Rich content from PostEditor
-                    topic: initialData.topic,
-                 };
-                 handleOpenPostModal(newPostShell, true); // True for new post flow
-            }}
-            currentBaseImages={allBaseImages}
-            onBaseImagesUpdate={handleBaseImagesUpdate}
-          />
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Create New Post</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PostEditor 
+                onInitiatePostCreation={(initialData) => {
+                     const newPostShell: ManagedPost = {
+                        id: crypto.randomUUID(), // Temp ID
+                        status: PostStatus.Draft, // Initial status before modal
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        scheduledDate: null,
+                        scheduledTime: null,
+                        platforms: Array.from(initialData.selectedPlatforms),
+                        content: initialData.platformSpecificContentData, // Rich content from PostEditor
+                        topic: initialData.topic,
+                     };
+                     handleOpenPostModal(newPostShell, true); // True for new post flow
+                }}
+                currentBaseImages={allBaseImages}
+                onBaseImagesUpdate={handleBaseImagesUpdate}
+              />
+            </CardContent>
+          </Card>
         </div>
 
         <div className="lg:w-1/3 mb-8 lg:mb-0 space-y-8">
-          <PostManager 
-            posts={allPosts}
-            onEditPost={(post) => handleOpenPostModal(post, false)} // False for editing existing
-            onDeletePost={handleDeletePost}
-          />
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Post Manager</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PostManager 
+                posts={allPosts}
+                onEditPost={(post) => handleOpenPostModal(post, false)} // False for editing existing
+                onDeletePost={handleDeletePost}
+              />
+            </CardContent>
+          </Card>
         </div>
 
         <div className="lg:w-1/3 space-y-8">
-           <VisualCalendar 
-            posts={allPosts}
-            onEditPost={(post) => handleOpenPostModal(post, false)} // False for editing existing
-            onDeletePost={handleDeletePost}
-            onUpdatePostDate={(postId, newDate) => {
-                const postToUpdate = allPosts.find(p => p.id === postId);
-                if (postToUpdate) {
-                    handleSavePost({ ...postToUpdate, scheduledDate: newDate, status: PostStatus.Scheduled });
-                }
-            }}
-          />
-          <BasicAnalytics />
+          <Card className="shadow-sm mb-8">
+            <CardHeader>
+              <CardTitle>Calendar</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VisualCalendar 
+                posts={allPosts}
+                onEditPost={(post) => handleOpenPostModal(post, false)} // False for editing existing
+                onDeletePost={handleDeletePost}
+                onUpdatePostDate={(postId, newDate) => {
+                    const postToUpdate = allPosts.find(p => p.id === postId);
+                    if (postToUpdate) {
+                        handleSavePost({ ...postToUpdate, scheduledDate: newDate, status: PostStatus.Scheduled });
+                    }
+                }}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BasicAnalytics />
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -157,8 +191,9 @@ const GenPostPage: React.FC = () => {
         />
       )}
 
-      <footer className="text-center mt-16 py-8 border-t border-[var(--color-charcoal-gray)]/20">
-        <p className="text-sm text-[var(--color-charcoal-gray)]/80 font-['Lora']">
+      <footer className="text-center mt-16 py-8 border-t border-border">
+        <Separator className="mb-4" />
+        <p className="text-sm text-muted-foreground font-['Lora']">
           &copy; {new Date().getFullYear()} GenPost. Powered by Gemini API.
         </p>
       </footer>
