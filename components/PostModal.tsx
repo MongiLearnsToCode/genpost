@@ -86,32 +86,67 @@ const PostModal: React.FC<PostModalProps> = ({
     setLocalSelectedPlatforms(prev => {
       const next = new Set(prev);
       const platformInfo = platformList.find(p => p.id === platformId);
+      
       if (next.has(platformId)) {
+        // Remove platform
         next.delete(platformId);
         setCurrentPost(cp => {
-            const newContent = {...cp.content};
-            delete newContent[platformId];
-            return {...cp, content: newContent, platforms: Array.from(next)};
+          const newContent = {...cp.content};
+          delete newContent[platformId];
+          return {
+            ...cp, 
+            content: newContent, 
+            platforms: Array.from(next)
+          };
         });
       } else {
+        // Add platform
         next.add(platformId);
-        if (platformInfo && !currentPost.content[platformId]) {
-          setCurrentPost(cp => ({
-            ...cp,
-            platforms: Array.from(next),
-            content: {
-              ...cp.content,
-              [platformId]: {
-                caption: cp.topic || cp.content?.instagram?.caption || '',
-                selectedHashtags: new Set(cp.content?.instagram?.selectedHashtags || []),
-                selectedImageIds: getDefaultImageSelectionForPlatform(platformInfo, allBaseImages),
-              },
-            },
-          }));
+        
+        if (platformInfo) {
+          // Initialize new platform content
+          setCurrentPost(cp => {
+            const currentContent = cp.content || {};
+            
+            // Get default caption from topic or existing instagram caption
+            let defaultCaption = cp.topic || '';
+            if (currentContent.instagram && currentContent.instagram.caption) {
+              defaultCaption = currentContent.instagram.caption;
+            }
+            
+            // Get default hashtags
+            const defaultHashtags = new Set(
+              cp.content?.instagram?.selectedHashtags || []
+            );
+            
+            // Get default images
+            const defaultImages = getDefaultImageSelectionForPlatform(
+              platformInfo, 
+              allBaseImages
+            );
+            
+            return {
+              ...cp,
+              platforms: Array.from(next),
+              content: {
+                ...currentContent,
+                [platformId]: {
+                  caption: defaultCaption,
+                  selectedHashtags: defaultHashtags,
+                  selectedImageIds: defaultImages
+                }
+              }
+            };
+          });
         } else if (currentPost.content[platformId]) {
-             setCurrentPost(cp => ({ ...cp, platforms: Array.from(next) }));
+          // Platform exists but no info, just update the platforms list
+          setCurrentPost(cp => ({ 
+            ...cp, 
+            platforms: Array.from(next) 
+          }));
         }
       }
+      
       return next;
     });
   };
@@ -225,11 +260,25 @@ const PostModal: React.FC<PostModalProps> = ({
             </div>
 
           {/* Per-Platform Editors/Previews */}
-          {currentPost.platforms.map(platformId => {
+          {(currentPost.platforms || []).map(platformId => {
             const platform = platformList.find(p => p.id === platformId);
             if (!platform) return null;
+            
+            // Safe null check for content
+            if (!currentPost.content || !currentPost.content[platformId]) {
+              // Initialize empty content for this platform if it doesn't exist
+              return (
+                <div key={platformId} className="p-3 border rounded-lg bg-gray-50/50 space-y-1">
+                  <h4 className="font-['Montserrat'] text-sm font-semibold flex items-center">
+                    {platform.icon && React.cloneElement(platform.icon as React.ReactElement<{ className?: string }>, { className: `h-5 w-5 mr-2 ${platform.color} p-0.5 rounded-sm text-white`})}
+                    {platform.name} <span className="text-xs ml-2 text-gray-500">(No content yet)</span>
+                  </h4>
+                </div>
+              );
+            }
+            
+            // Safely access content
             const content = currentPost.content[platformId];
-            if (!content) return null; // Should always have content if platform is selected
 
             if (isNewPostFlow) { // Read-only summary for new posts
               return (

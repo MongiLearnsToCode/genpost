@@ -72,7 +72,10 @@ const PostManager: React.FC<PostManagerProps> = ({ posts, onEditPost, onDeletePo
                   {/* Show snippet from first platform */}
                   {(() => {
                     const firstPlatform = post.platforms.length > 0 ? post.platforms[0] : null;
-                    const caption = firstPlatform ? post.content[firstPlatform]?.caption : null;
+                    // Add null check for post.content before trying to access it
+                    const caption = firstPlatform && post.content && post.content[firstPlatform] 
+                      ? post.content[firstPlatform].caption 
+                      : null;
                     
                     if (!caption) return <span className="italic">No caption</span>;
                     
