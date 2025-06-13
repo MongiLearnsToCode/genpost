@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-deep-forest: #2D3748;
+  --color-crisp-white: #FFFFFF;
+  --color-soft-gray: #EDF2F7;
+  --color-warm-blush: #FED7D7;
+  --color-slate-blue: #4A5568;
+  --color-fresh-teal: #38B2AC;
+  --color-deep-sea: #2C7A7B;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--color-deep-forest);
+}

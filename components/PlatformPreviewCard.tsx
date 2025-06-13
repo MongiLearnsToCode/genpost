@@ -127,7 +127,9 @@ Return only the modified caption text, without any introductory phrases, labels,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
 
-      const newCaptionText = response.text.trim();
+      // Access text property with optional chaining similar to geminiService.ts
+      const responseText = response.text?.trim() || '';
+      const newCaptionText = responseText;
       setCurrentCaption(newCaptionText);
       onContentChange(platform.id, newCaptionText, currentSelectedHashtags, currentSelectedImageIds);
 

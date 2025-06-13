@@ -1,6 +1,7 @@
+"use client";
 
 import React from 'react';
-import { Platform, PlatformID } from './types';
+import { Platform, PlatformID } from '@/types';
 
 export const GEMINI_MODEL_NAME = 'gemini-2.5-flash-preview-04-17';
 

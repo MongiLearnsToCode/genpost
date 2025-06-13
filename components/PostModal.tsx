@@ -64,7 +64,7 @@ const PostModal: React.FC<PostModalProps> = ({
             setTopicInput(postToEdit.topic || '');
             setScheduledDateInput(postToEdit.scheduledDate?.split('T')[0] || '');
             setScheduledTimeInput(postToEdit.scheduledTime || '');
-        } else { // This case is for "Create New Post" directly from SoloSparkPage, not the PostEditor flow
+        } else { // This case is for "Create New Post" directly from GenPostPage, not the PostEditor flow
             const newId = crypto.randomUUID();
             setCurrentPost({
                 id: newId, status: PostStatus.Draft, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),

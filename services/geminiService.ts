@@ -1,25 +1,17 @@
 
-// NOTE: For this specific MVP, the Gemini API logic is directly within PostEditor.tsx
-// to simplify the overall structure and reduce the number of files for the demonstration.
-// This file is provided as an example of how a dedicated service might be structured.
-// If you were to use this, you'd import it into PostEditor.tsx.
+"use client";
 
+// This file provides the API service for Gemini AI integration
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { GEMINI_MODEL_NAME } from '../constants';
+import { GEMINI_MODEL_NAME } from '@/constants';
 
 const getApiKeyOrThrow = (): string => {
-  // Attempt to get from a globally defined variable (e.g., set by an external script or build tool)
-  if (typeof (window as any).GEMINI_API_KEY === 'string') {
-    return (window as any).GEMINI_API_KEY;
+  // In Next.js, we use NEXT_PUBLIC_ prefix for client-side environment variables
+  if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+    return process.env.NEXT_PUBLIC_GEMINI_API_KEY;
   }
   
-  // Fallback to process.env (useful if running in an environment where this is set, e.g. Node for testing or some bundlers)
-  // For production browser deployment, this is unlikely to work without further setup.
-  if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-     return process.env.API_KEY;
-  }
-  
-  throw new Error("API Key not found. Please ensure GEMINI_API_KEY is configured either globally (window.GEMINI_API_KEY) or via process.env.API_KEY.");
+  throw new Error("API Key not found. Please ensure NEXT_PUBLIC_GEMINI_API_KEY is configured in your .env.local file.");
 };
 
 
@@ -38,12 +30,19 @@ export const generateCaptionsFromService = async (topic: string): Promise<string
       }
     });
 
-    let jsonStr = response.text.trim();
-    // Remove markdown fences if present
-    const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
+    // Ensure response.text exists and handle null/undefined case
+    let jsonStr = response.text?.trim() || "[]";
+    
+    // Remove markdown fences if present (without using 's' flag which requires es2018+)
+    const fenceRegex = /^```(\w*)?\s*[\s\S]*?\s*```$/;
     const match = jsonStr.match(fenceRegex);
-    if (match && match[2]) {
-      jsonStr = match[2].trim();
+    if (match) {
+      // Extract content between the backticks without using capture groups with 's' flag
+      const startIndex = jsonStr.indexOf('\n', jsonStr.indexOf('```')) + 1;
+      const endIndex = jsonStr.lastIndexOf('```');
+      if (startIndex > 0 && endIndex > startIndex) {
+        jsonStr = jsonStr.substring(startIndex, endIndex).trim();
+      }
     }
 
     const parsedData = JSON.parse(jsonStr);

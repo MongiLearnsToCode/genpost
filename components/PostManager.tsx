@@ -70,9 +70,14 @@ const PostManager: React.FC<PostManagerProps> = ({ posts, onEditPost, onDeletePo
                 </p>
                 <p className="text-sm font-['Lora'] text-[var(--color-charcoal-gray)] mt-1 truncate max-w-xs">
                   {/* Show snippet from first platform */}
-                  {post.platforms.length > 0 && post.content[post.platforms[0]]?.caption 
-                    ? post.content[post.platforms[0]].caption.substring(0, 60) + (post.content[post.platforms[0]].caption.length > 60 ? '...' : '')
-                    : <span className="italic">No caption</span>}
+                  {(() => {
+                    const firstPlatform = post.platforms.length > 0 ? post.platforms[0] : null;
+                    const caption = firstPlatform ? post.content[firstPlatform]?.caption : null;
+                    
+                    if (!caption) return <span className="italic">No caption</span>;
+                    
+                    return caption.substring(0, 60) + (caption.length > 60 ? '...' : '');
+                  })()}
                 </p>
               </div>
               <div className="flex-shrink-0 ml-2">
