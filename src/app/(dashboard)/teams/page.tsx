@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ProtectedPage } from '@/components/auth/protected-page';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../../convex/_generated/api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from "react";
+import { ProtectedPage } from "@/components/auth/protected-page";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -16,20 +16,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { UserButton } from '@clerk/nextjs';
-import { useAuth } from '@/hooks/use-auth';
-import { Plus, Users, Settings, Mail, Crown, Shield, User } from 'lucide-react';
-import { toast } from 'sonner';
-import { Id } from '../../../../convex/_generated/dataModel';
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { UserButton } from "@clerk/nextjs";
+import { useAuth } from "@/hooks/use-auth";
+import { Plus, Users, Settings, Mail, Crown, Shield, User } from "lucide-react";
+import { toast } from "sonner";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 export default function TeamsPage() {
   return (
@@ -41,7 +41,9 @@ export default function TeamsPage() {
 
 function TeamsContent() {
   const { getUserDisplayName } = useAuth();
-  const [selectedTeamId, setSelectedTeamId] = useState<Id<"teams"> | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState<Id<"teams"> | null>(
+    null,
+  );
   const [createTeamOpen, setCreateTeamOpen] = useState(false);
   const [inviteTeamOpen, setInviteTeamOpen] = useState(false);
 
@@ -76,8 +78,8 @@ function TeamsContent() {
               Manage your teams and collaborate with others
             </p>
           </div>
-          <CreateTeamDialog 
-            open={createTeamOpen} 
+          <CreateTeamDialog
+            open={createTeamOpen}
             onOpenChange={setCreateTeamOpen}
           />
         </div>
@@ -85,21 +87,25 @@ function TeamsContent() {
         {/* Teams Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {teams?.map((team) => (
-            <TeamCard 
-              key={team._id} 
-              team={team} 
+            <TeamCard
+              key={team._id}
+              team={team}
               onSelect={setSelectedTeamId}
               onInvite={() => {
-                setSelectedTeamId(team._id);
-                setInviteTeamOpen(true);
+                if (team._id) {
+                  setSelectedTeamId(team._id);
+                  setInviteTeamOpen(true);
+                }
               }}
             />
           ))}
-          
+
           {teams?.length === 0 && (
             <div className="col-span-full text-center py-12">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No teams</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No teams
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Get started by creating your first team.
               </p>
@@ -133,18 +139,34 @@ function TeamsContent() {
   );
 }
 
+interface TeamData {
+  _id?: Id<"teams">;
+  name?: string;
+  description?: string;
+  role: "owner" | "admin" | "member";
+  billingPlan?: string;
+  postsUsedThisMonth?: number;
+  postLimitPerMonth?: number;
+  joinedAt?: number;
+  _creationTime?: number;
+  createdAt?: number;
+  updatedAt?: number;
+  ownerId?: Id<"users">;
+  billingPeriodStart?: number;
+}
+
 interface TeamCardProps {
-  team: any;
-  onSelect: (teamId: Id<"teams">) => void;
+  team: TeamData;
+  onSelect: (teamId: Id<"teams"> | null) => void;
   onInvite: () => void;
 }
 
 function TeamCard({ team, onSelect, onInvite }: TeamCardProps) {
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'owner':
+      case "owner":
         return <Crown className="h-4 w-4 text-yellow-500" />;
-      case 'admin':
+      case "admin":
         return <Shield className="h-4 w-4 text-blue-500" />;
       default:
         return <User className="h-4 w-4 text-gray-500" />;
@@ -153,12 +175,12 @@ function TeamCard({ team, onSelect, onInvite }: TeamCardProps) {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'owner':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'admin':
-        return 'bg-blue-100 text-blue-800';
+      case "owner":
+        return "bg-yellow-100 text-yellow-800";
+      case "admin":
+        return "bg-blue-100 text-blue-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -166,7 +188,9 @@ function TeamCard({ team, onSelect, onInvite }: TeamCardProps) {
     <Card className="hover:shadow-lg transition-shadow cursor-pointer">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{team.name}</CardTitle>
+          <CardTitle className="text-lg">
+            {team.name || "Untitled Team"}
+          </CardTitle>
           <div className="flex items-center space-x-1">
             {getRoleIcon(team.role)}
             <Badge className={`text-xs ${getRoleBadgeColor(team.role)}`}>
@@ -183,31 +207,27 @@ function TeamCard({ team, onSelect, onInvite }: TeamCardProps) {
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Plan:</span>
             <Badge variant="outline" className="capitalize">
-              {team.billingPlan}
+              {team.billingPlan || "free"}
             </Badge>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Posts this month:</span>
             <span className="font-medium">
-              {team.postsUsedThisMonth} / {team.postLimitPerMonth}
+              {team.postsUsedThisMonth || 0} / {team.postLimitPerMonth || 0}
             </span>
           </div>
           <div className="flex space-x-2 mt-4">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => onSelect(team._id)}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => team._id && onSelect(team._id)}
               className="flex-1"
             >
               <Settings className="mr-1 h-3 w-3" />
               Manage
             </Button>
-            {(team.role === 'owner' || team.role === 'admin') && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onInvite}
-              >
+            {(team.role === "owner" || team.role === "admin") && (
+              <Button variant="outline" size="sm" onClick={onInvite}>
                 <Mail className="h-3 w-3" />
               </Button>
             )}
@@ -224,8 +244,8 @@ interface CreateTeamDialogProps {
 }
 
 function CreateTeamDialog({ open, onOpenChange }: CreateTeamDialogProps) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const createTeam = useMutation(api.teams.createTeam);
@@ -240,13 +260,15 @@ function CreateTeamDialog({ open, onOpenChange }: CreateTeamDialogProps) {
         name: name.trim(),
         description: description.trim() || undefined,
       });
-      
-      toast.success('Team created successfully!');
-      setName('');
-      setDescription('');
+
+      toast.success("Team created successfully!");
+      setName("");
+      setDescription("");
       onOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create team');
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create team",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -265,7 +287,8 @@ function CreateTeamDialog({ open, onOpenChange }: CreateTeamDialogProps) {
           <DialogHeader>
             <DialogTitle>Create New Team</DialogTitle>
             <DialogDescription>
-              Create a team to collaborate with others on social media management.
+              Create a team to collaborate with others on social media
+              management.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -292,7 +315,7 @@ function CreateTeamDialog({ open, onOpenChange }: CreateTeamDialogProps) {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isLoading || !name.trim()}>
-              {isLoading ? 'Creating...' : 'Create Team'}
+              {isLoading ? "Creating..." : "Create Team"}
             </Button>
           </DialogFooter>
         </form>
@@ -307,9 +330,13 @@ interface InviteTeamDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function InviteTeamDialog({ teamId, open, onOpenChange }: InviteTeamDialogProps) {
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'admin' | 'member'>('member');
+function InviteTeamDialog({
+  teamId,
+  open,
+  onOpenChange,
+}: InviteTeamDialogProps) {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"admin" | "member">("member");
   const [isLoading, setIsLoading] = useState(false);
 
   const createInvitation = useMutation(api.invitations.createInvitation);
@@ -325,16 +352,18 @@ function InviteTeamDialog({ teamId, open, onOpenChange }: InviteTeamDialogProps)
         email: email.trim(),
         role,
       });
-      
-      toast.success('Invitation sent successfully!');
+
+      toast.success("Invitation sent successfully!");
       // In a real app, you'd copy the invite link or send an email
-      console.log('Invite link:', result.inviteLink);
-      
-      setEmail('');
-      setRole('member');
+      console.log("Invite link:", result.inviteLink);
+
+      setEmail("");
+      setRole("member");
       onOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to send invitation');
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send invitation",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -367,7 +396,7 @@ function InviteTeamDialog({ teamId, open, onOpenChange }: InviteTeamDialogProps)
               <select
                 id="role"
                 value={role}
-                onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
+                onChange={(e) => setRole(e.target.value as "admin" | "member")}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="member">Member</option>
@@ -377,7 +406,7 @@ function InviteTeamDialog({ teamId, open, onOpenChange }: InviteTeamDialogProps)
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isLoading || !email.trim()}>
-              {isLoading ? 'Sending...' : 'Send Invitation'}
+              {isLoading ? "Sending..." : "Send Invitation"}
             </Button>
           </DialogFooter>
         </form>
@@ -393,7 +422,7 @@ interface TeamManagementProps {
 function TeamManagement({ teamId }: TeamManagementProps) {
   const team = useQuery(api.teams.getTeam, { teamId });
   const members = useQuery(api.teams.getTeamMembers, { teamId });
-  const invitations = useQuery(api.teams.getTeamInvitations, { teamId });
+  const invitations = useQuery(api.invitations.getTeamInvitations, { teamId });
 
   if (!team) {
     return <div>Loading team details...</div>;
@@ -412,11 +441,15 @@ function TeamManagement({ teamId }: TeamManagementProps) {
               <p className="mt-1">{team.name}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-500">Description</Label>
-              <p className="mt-1">{team.description || 'No description'}</p>
+              <Label className="text-sm font-medium text-gray-500">
+                Description
+              </Label>
+              <p className="mt-1">{team.description || "No description"}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-500">Billing Plan</Label>
+              <Label className="text-sm font-medium text-gray-500">
+                Billing Plan
+              </Label>
               <Badge variant="outline" className="mt-1 capitalize">
                 {team.billingPlan}
               </Badge>
@@ -424,7 +457,8 @@ function TeamManagement({ teamId }: TeamManagementProps) {
             <div>
               <Label className="text-sm font-medium text-gray-500">Usage</Label>
               <p className="mt-1">
-                {team.postsUsedThisMonth} / {team.postLimitPerMonth} posts this month
+                {team.postsUsedThisMonth} / {team.postLimitPerMonth} posts this
+                month
               </p>
             </div>
           </div>
@@ -439,7 +473,10 @@ function TeamManagement({ teamId }: TeamManagementProps) {
           {members && members.length > 0 ? (
             <div className="space-y-3">
               {members.map((member) => (
-                <div key={member.userId} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={member.userId}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div className="flex items-center space-x-3">
                     <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
                       <User className="h-4 w-4 text-gray-500" />
@@ -451,13 +488,15 @@ function TeamManagement({ teamId }: TeamManagementProps) {
                       <p className="text-sm text-gray-500">{member.email}</p>
                     </div>
                   </div>
-                  <Badge className={`capitalize ${
-                    member.role === 'owner' 
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : member.role === 'admin'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
+                  <Badge
+                    className={`capitalize ${
+                      member.role === "owner"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : member.role === "admin"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
                     {member.role}
                   </Badge>
                 </div>
@@ -477,18 +516,22 @@ function TeamManagement({ teamId }: TeamManagementProps) {
           <CardContent>
             <div className="space-y-3">
               {invitations
-                .filter(inv => inv.status === 'pending')
+                .filter((inv) => inv.status === "pending")
                 .map((invitation) => (
-                <div key={invitation._id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{invitation.email}</p>
-                    <p className="text-sm text-gray-500">
-                      Invited by {invitation.inviterName} • Role: {invitation.role}
-                    </p>
+                  <div
+                    key={invitation._id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">{invitation.email}</p>
+                      <p className="text-sm text-gray-500">
+                        Invited by {invitation.inviterName} • Role:{" "}
+                        {invitation.role}
+                      </p>
+                    </div>
+                    <Badge variant="outline">Pending</Badge>
                   </div>
-                  <Badge variant="outline">Pending</Badge>
-                </div>
-              ))}
+                ))}
             </div>
           </CardContent>
         </Card>

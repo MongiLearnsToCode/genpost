@@ -31,12 +31,19 @@
 - `lib/analytics/data-processor.ts` - Analytics data aggregation and calculations
 - `lib/utils/timezone.ts` - Timezone detection and conversion utilities
 - `lib/utils/export.ts` - Data export functionality (CSV, Google Docs)
-- `convex/schema.ts` - Database schema definitions
+- `convex/schema.ts` - Database schema definitions with teams, teamMemberships, and teamInvitations tables
 - `convex/users.ts` - User management Convex functions
+- `convex/teams.ts` - Complete team CRUD operations and member management functions
+- `convex/invitations.ts` - Team invitation system with token-based invites, acceptance/decline
 - `convex/posts.ts` - Post CRUD operations Convex functions
 - `convex/social-accounts.ts` - Social platform account management
 - `convex/analytics.ts` - Analytics data storage and retrieval
 - `convex/scheduling.ts` - Scheduling queue management functions
+- `src/app/(dashboard)/teams/page.tsx` - Teams management interface with creation and invitation dialogs
+- `src/app/invite/[token]/page.tsx` - Invitation acceptance page with auth flow
+- `src/components/auth/protected-page.tsx` - Protected page wrapper component
+- `src/components/auth/auth-error-boundary.tsx` - Authentication error boundary component
+- `src/hooks/use-auth.ts` - Custom authentication hooks and utilities
 - `middleware.ts` - Next.js middleware for auth and route protection
 - `app/api/webhooks/social/route.ts` - Webhook endpoints for social platform callbacks
 - `app/api/webhooks/billing/route.ts` - Webhook endpoints for Polar.sh billing events
@@ -55,7 +62,7 @@
   - [x] 1.1 Configure Clerk authentication with Next.js App Router
   - [x] 1.2 Create sign-in and sign-up pages using Clerk components
   - [x] 1.3 Set up middleware for route protection and auth state management
-  - [ ] 1.4 Implement team creation and invitation functionality
+  - [x] 1.4 Implement team creation and invitation functionality
   - [ ] 1.5 Create user profile management interface
   - [ ] 1.6 Set up Convex schema for users and team relationships
   - [ ] 1.7 Implement role-based access for basic team sharing

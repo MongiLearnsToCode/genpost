@@ -1,35 +1,36 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation } from 'convex/react';
-import { useAuth } from '@clerk/nextjs';
-import { api } from '../../../../convex/_generated/api';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery, useMutation } from "convex/react";
+import { useAuth } from "@clerk/nextjs";
+import { api } from "../../../../convex/_generated/api";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Users, Clock, UserPlus } from 'lucide-react';
-import { toast } from 'sonner';
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, XCircle, Users, Clock, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 export default function InvitePage() {
   const params = useParams();
   const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const token = params.token as string;
-  
+
   // Fetch invitation details
-  const invitation = useQuery(api.invitations.getInvitationByToken, 
-    token ? { token } : "skip"
+  const invitation = useQuery(
+    api.invitations.getInvitationByToken,
+    token ? { token } : "skip",
   );
-  
+
   const acceptInvitation = useMutation(api.invitations.acceptInvitation);
   const declineInvitation = useMutation(api.invitations.declineInvitation);
 
@@ -37,21 +38,23 @@ export default function InvitePage() {
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       // Store the current URL to redirect back after sign-in
-      sessionStorage.setItem('postSignInRedirect', window.location.pathname);
-      router.push('/sign-in');
+      sessionStorage.setItem("postSignInRedirect", window.location.pathname);
+      router.push("/sign-in");
     }
   }, [isSignedIn, isLoaded, router]);
 
   const handleAccept = async () => {
     if (!token) return;
-    
+
     setIsProcessing(true);
     try {
-      const teamId = await acceptInvitation({ token });
-      toast.success('Successfully joined the team!');
+      await acceptInvitation({ token });
+      toast.success("Successfully joined the team!");
       router.push(`/teams`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to accept invitation');
+      toast.error(
+        error instanceof Error ? error.message : "Failed to accept invitation",
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -59,14 +62,16 @@ export default function InvitePage() {
 
   const handleDecline = async () => {
     if (!token) return;
-    
+
     setIsProcessing(true);
     try {
       await declineInvitation({ token });
-      toast.success('Invitation declined');
-      router.push('/');
+      toast.success("Invitation declined");
+      router.push("/");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to decline invitation');
+      toast.error(
+        error instanceof Error ? error.message : "Failed to decline invitation",
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -116,14 +121,12 @@ export default function InvitePage() {
             </div>
             <CardTitle className="text-xl">Invalid Invitation</CardTitle>
             <CardDescription>
-              This invitation link is invalid, expired, or has already been used.
+              This invitation link is invalid, expired, or has already been
+              used.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              className="w-full" 
-              onClick={() => router.push('/')}
-            >
+            <Button className="w-full" onClick={() => router.push("/")}>
               Go to Home
             </Button>
           </CardContent>
@@ -141,20 +144,22 @@ export default function InvitePage() {
           </div>
           <CardTitle className="text-xl">Team Invitation</CardTitle>
           <CardDescription>
-            You've been invited to join a team
+            You&apos;ve been invited to join a team
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           {/* Team Information */}
           <div className="space-y-4">
             <div className="text-center">
               <h3 className="text-lg font-semibold">{invitation.teamName}</h3>
               {invitation.teamDescription && (
-                <p className="text-gray-600 mt-1">{invitation.teamDescription}</p>
+                <p className="text-gray-600 mt-1">
+                  {invitation.teamDescription}
+                </p>
               )}
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <Users className="h-5 w-5 mx-auto text-gray-500 mb-1" />
@@ -163,7 +168,7 @@ export default function InvitePage() {
                   {invitation.role}
                 </Badge>
               </div>
-              
+
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <Clock className="h-5 w-5 mx-auto text-gray-500 mb-1" />
                 <p className="font-medium">Invited by</p>
@@ -176,8 +181,8 @@ export default function InvitePage() {
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               onClick={handleAccept}
               disabled={isProcessing}
             >
@@ -193,10 +198,10 @@ export default function InvitePage() {
                 </>
               )}
             </Button>
-            
-            <Button 
-              variant="outline" 
-              className="w-full" 
+
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={handleDecline}
               disabled={isProcessing}
             >
@@ -207,7 +212,8 @@ export default function InvitePage() {
 
           {/* Additional Information */}
           <div className="text-xs text-gray-500 text-center">
-            By accepting this invitation, you'll be able to collaborate on social media management with this team.
+            By accepting this invitation, you&apos;ll be able to collaborate on
+            social media management with this team.
           </div>
         </CardContent>
       </Card>
