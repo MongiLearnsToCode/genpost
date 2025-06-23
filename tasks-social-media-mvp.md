@@ -9,7 +9,8 @@
 - `app/(dashboard)/create/page.tsx` - Post creation page with mode selection
 - `app/(dashboard)/analytics/page.tsx` - Analytics dashboard component
 - `app/(dashboard)/history/page.tsx` - Post history and management interface
-- `app/(dashboard)/settings/page.tsx` - Account settings and billing management
+- `src/app/(dashboard)/settings/page.tsx` - User profile and account settings page UI.
+- `src/app/(dashboard)/settings/page.test.tsx` - Unit tests for the user profile and settings page.
 - `components/ui/calendar.tsx` - Interactive calendar component using shadcn/ui
 - `components/ui/post-editor.tsx` - Rich text editor for post creation
 - `components/ui/platform-preview.tsx` - Preview components for each social platform
@@ -48,6 +49,11 @@
 - `app/api/webhooks/social/route.ts` - Webhook endpoints for social platform callbacks
 - `app/api/webhooks/billing/route.ts` - Webhook endpoints for Polar.sh billing events
 - `app/api/export/route.ts` - Data export API endpoints
+- `package.json` - Project dependencies and scripts (modified for testing).
+- `babel.config.js` - Babel configuration for Jest integration.
+- `jest.config.js` - Jest test runner configuration.
+- `jest.setup.js` - Jest setup file (e.g., for jest-dom).
+- `__mocks__/fileMock.js` - Mock for static file imports in Jest.
 
 ### Notes
 
@@ -63,7 +69,7 @@
   - [x] 1.2 Create sign-in and sign-up pages using Clerk components
   - [x] 1.3 Set up middleware for route protection and auth state management
   - [x] 1.4 Implement team creation and invitation functionality
-  - [ ] 1.5 Create user profile management interface
+  - [x] 1.5 Create user profile management interface
   - [ ] 1.6 Set up Convex schema for users and team relationships
   - [ ] 1.7 Implement role-based access for basic team sharing
   - [ ] 1.8 Add user onboarding flow with guided social account connection
