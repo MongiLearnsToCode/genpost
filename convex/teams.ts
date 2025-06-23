@@ -310,6 +310,79 @@ export const removeTeamMember = mutation({
   },
 });
 
+// Delete team
+export const deleteTeam = mutation({
+  args: { teamId: v.id("teams") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if user is owner of this team
+    const membership = await ctx.db
+      .query("teamMemberships")
+      .withIndex("by_team_and_user", (q) =>
+        q.eq("teamId", args.teamId).eq("userId", user._id)
+      )
+      .first();
+
+    if (!membership || membership.role !== "owner") {
+      throw new Error("Access denied: Only team owner can delete the team");
+    }
+
+    // 1. Delete all team memberships for this team
+    const membershipsToDelete = await ctx.db
+      .query("teamMemberships")
+      .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+      .collect();
+    for (const m of membershipsToDelete) {
+      await ctx.db.delete(m._id);
+    }
+
+    // 2. Delete all team invitations for this team
+    const invitationsToDelete = await ctx.db
+      .query("teamInvitations")
+      .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+      .collect();
+    for (const i of invitationsToDelete) {
+      await ctx.db.delete(i._id);
+    }
+
+    // 3. Delete all posts for this team (TODO: when posts table exists and is populated)
+    // const postsToDelete = await ctx.db
+    //   .query("posts")
+    //   .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+    //   .collect();
+    // for (const p of postsToDelete) {
+    //   await ctx.db.delete(p._id);
+    // }
+
+    // 4. Delete all social accounts for this team (TODO: when socialAccounts exist)
+    // const socialAccountsToDelete = await ctx.db
+    //  .query("socialAccounts")
+    //  .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+    //  .collect();
+    // for (const sa of socialAccountsToDelete) {
+    //    await ctx.db.delete(sa._id);
+    // }
+
+    // 5. Finally, delete the team itself
+    await ctx.db.delete(args.teamId);
+
+    return true;
+  },
+});
+
 // Update team member role
 export const updateTeamMemberRole = mutation({
   args: {

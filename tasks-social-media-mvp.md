@@ -34,13 +34,13 @@
 - `lib/utils/export.ts` - Data export functionality (CSV, Google Docs)
 - `convex/schema.ts` - Database schema definitions with teams, teamMemberships, and teamInvitations tables
 - `convex/users.ts` - User management Convex functions
-- `convex/teams.ts` - Complete team CRUD operations and member management functions
-- `convex/invitations.ts` - Team invitation system with token-based invites, acceptance/decline
-- `convex/posts.ts` - Post CRUD operations Convex functions
+- `convex/teams.ts` - Complete team CRUD operations, member management functions, and role-based access controls (added deleteTeam, reviewed RBAC).
+- `convex/invitations.ts` - Team invitation system with token-based invites, acceptance/decline (reviewed RBAC).
+- `convex/posts.ts` - Post CRUD operations Convex functions (placeholder, file does not exist yet)
 - `convex/social-accounts.ts` - Social platform account management
 - `convex/analytics.ts` - Analytics data storage and retrieval
 - `convex/scheduling.ts` - Scheduling queue management functions
-- `src/app/(dashboard)/teams/page.tsx` - Teams management interface with creation and invitation dialogs
+- `src/app/(dashboard)/teams/page.tsx` - Teams management interface with creation, invitation, and role-based UI controls for team/member/invitation management.
 - `src/app/invite/[token]/page.tsx` - Invitation acceptance page with auth flow
 - `src/components/auth/protected-page.tsx` - Protected page wrapper component
 - `src/components/auth/auth-error-boundary.tsx` - Authentication error boundary component
@@ -70,8 +70,8 @@
   - [x] 1.3 Set up middleware for route protection and auth state management
   - [x] 1.4 Implement team creation and invitation functionality
   - [x] 1.5 Create user profile management interface
-  - [ ] 1.6 Set up Convex schema for users and team relationships
-  - [ ] 1.7 Implement role-based access for basic team sharing
+  - [x] 1.6 Set up Convex schema for users and team relationships
+  - [x] 1.7 Implement role-based access for basic team sharing
   - [ ] 1.8 Add user onboarding flow with guided social account connection
 
 - [ ] 2.0 Social Platform Integration & OAuth Implementation

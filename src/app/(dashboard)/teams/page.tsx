@@ -39,6 +39,94 @@ export default function TeamsPage() {
   );
 }
 
+interface ChangeRoleDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  member: { userId: Id<"users">; firstName?: string; lastName?: string; email?: string };
+  currentRole: "admin" | "member";
+  onUpdateRole: (newRole: "admin" | "member") => Promise<void>;
+}
+
+function ChangeRoleDialog({ open, onOpenChange, member, currentRole, onUpdateRole }: ChangeRoleDialogProps) {
+  const [newRole, setNewRole] = useState<"admin" | "member">(currentRole);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setNewRole(currentRole);
+  }, [currentRole, open]);
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    await onUpdateRole(newRole);
+    setIsLoading(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Change Role for {member.firstName} {member.lastName}</DialogTitle>
+          <DialogDescription>Select the new role for {member.email}.</DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          <Label htmlFor="new-role">New Role</Label>
+          <select
+            id="new-role"
+            value={newRole}
+            onChange={(e) => setNewRole(e.target.value as "admin" | "member")}
+            className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={isLoading || newRole === currentRole}>
+            {isLoading ? "Updating..." : "Update Role"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+interface RemoveMemberDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  memberEmail?: string;
+  onConfirmRemove: () => Promise<void>;
+}
+
+function RemoveMemberDialog({ open, onOpenChange, memberEmail, onConfirmRemove }: RemoveMemberDialogProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    await onConfirmRemove();
+    setIsLoading(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Remove Team Member</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to remove {memberEmail || "this member"} from the team? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>Cancel</Button>
+          <Button variant="destructive" onClick={handleConfirm} disabled={isLoading}>
+            {isLoading ? "Removing..." : "Remove Member"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function TeamsContent() {
   const { getUserDisplayName } = useAuth();
   const [selectedTeamId, setSelectedTeamId] = useState<Id<"teams"> | null>(
@@ -415,6 +503,86 @@ function InviteTeamDialog({
   );
 }
 
+interface EditTeamDetailsDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  teamName: string;
+  teamDescription: string;
+  onSubmit: (values: { name: string; description?: string }) => Promise<void>;
+}
+
+function EditTeamDetailsDialog({
+  open,
+  onOpenChange,
+  teamName,
+  teamDescription,
+  onSubmit,
+}: EditTeamDetailsDialogProps) {
+  const [name, setName] = useState(teamName);
+  const [description, setDescription] = useState(teamDescription);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setName(teamName);
+    setDescription(teamDescription);
+  }, [teamName, teamDescription, open]); // Reset when dialog opens or props change
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setIsLoading(true);
+    await onSubmit({ name: name.trim(), description: description.trim() || undefined });
+    setIsLoading(false);
+    // onOpenChange(false); // Parent will handle closing on success
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Edit Team Details</DialogTitle>
+            <DialogDescription>
+              Update your team's name and description.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-team-name">Team Name *</Label>
+              <Input
+                id="edit-team-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="My Awesome Team"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-team-description">Description</Label>
+              <Textarea
+                id="edit-team-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief description of your team..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading || !name.trim()}>
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 interface TeamManagementProps {
   teamId: Id<"teams">;
 }
@@ -423,6 +591,37 @@ function TeamManagement({ teamId }: TeamManagementProps) {
   const team = useQuery(api.teams.getTeam, { teamId });
   const members = useQuery(api.teams.getTeamMembers, { teamId });
   const invitations = useQuery(api.invitations.getTeamInvitations, { teamId });
+  const { user: authUser, redirectToDashboard } = useAuth(); // Get current auth user for ID comparison
+
+  const [isEditTeamDialogOpen, setIsEditTeamDialogOpen] = useState(false);
+  // States for member management
+  const [editingMember, setEditingMember] = useState<any | null>(null);
+  const [showChangeRoleDialog, setShowChangeRoleDialog] = useState(false);
+  const [showRemoveMemberDialog, setShowRemoveMemberDialog] = useState(false);
+  // Delete Team Dialog
+  const [showDeleteTeamDialog, setShowDeleteTeamDialog] = useState(false);
+
+
+  const updateTeamMutation = useMutation(api.teams.updateTeam);
+  const updateTeamMemberRoleMutation = useMutation(api.teams.updateTeamMemberRole);
+  const removeTeamMemberMutation = useMutation(api.teams.removeTeamMember);
+  const cancelInvitationMutation = useMutation(api.invitations.cancelInvitation);
+  const resendInvitationMutation = useMutation(api.invitations.resendInvitation);
+  const deleteTeamMutation = useMutation(api.teams.deleteTeam);
+
+  const handleUpdateTeam = async (values: { name: string; description?: string }) => {
+    try {
+      await updateTeamMutation({
+        teamId,
+        name: values.name,
+        description: values.description,
+      });
+      toast.success("Team details updated successfully!");
+      setIsEditTeamDialogOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update team");
+    }
+  };
 
   if (!team) {
     return <div>Loading team details...</div>;
@@ -431,8 +630,13 @@ function TeamManagement({ teamId }: TeamManagementProps) {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Team Details</CardTitle>
+          {(team.userRole === "owner" || team.userRole === "admin") && (
+            <Button variant="outline" size="sm" onClick={() => setIsEditTeamDialogOpen(true)}>
+              <Settings className="mr-1 h-3 w-3" /> Edit Team
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
@@ -465,6 +669,14 @@ function TeamManagement({ teamId }: TeamManagementProps) {
         </CardContent>
       </Card>
 
+      <EditTeamDetailsDialog
+        open={isEditTeamDialogOpen}
+        onOpenChange={setIsEditTeamDialogOpen}
+        teamName={team.name || ""}
+        teamDescription={team.description || ""}
+        onSubmit={handleUpdateTeam}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Team Members</CardTitle>
@@ -478,27 +690,51 @@ function TeamManagement({ teamId }: TeamManagementProps) {
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User className="h-4 w-4 text-gray-500" />
-                    </div>
+                      {member.imageUrl ? (
+                        <img src={member.imageUrl} alt={`${member.firstName} ${member.lastName}`} className="h-8 w-8 rounded-full" />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                          <User className="h-4 w-4 text-gray-500" />
+                        </div>
+                      )}
                     <div>
                       <p className="font-medium">
                         {member.firstName} {member.lastName}
+                          {member.userId === team.ownerId && member.role === "owner" && " (Owner)"}
+                          {member.userId === authUser?.id && " (You)"}
                       </p>
                       <p className="text-sm text-gray-500">{member.email}</p>
                     </div>
                   </div>
-                  <Badge
-                    className={`capitalize ${
-                      member.role === "owner"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : member.role === "admin"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {member.role}
-                  </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge
+                        className={`capitalize ${
+                          member.role === "owner"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : member.role === "admin"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {member.role}
+                      </Badge>
+                      {/* Actions for members */}
+                      {team.userRole === 'owner' && member.role !== 'owner' && member.userId !== authUser?.id && (
+                        <>
+                          <Button variant="outline" size="sm" onClick={() => { setEditingMember(member); setShowChangeRoleDialog(true); }}>
+                            Change Role
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => { setEditingMember(member); setShowRemoveMemberDialog(true); }}>
+                            Remove
+                          </Button>
+                        </>
+                      )}
+                      {team.userRole === 'admin' && member.role === 'member' && member.userId !== authUser?.id && (
+                         <Button variant="destructive" size="sm" onClick={() => { setEditingMember(member); setShowRemoveMemberDialog(true); }}>
+                            Remove
+                          </Button>
+                      )}
+                    </div>
                 </div>
               ))}
             </div>
@@ -508,7 +744,46 @@ function TeamManagement({ teamId }: TeamManagementProps) {
         </CardContent>
       </Card>
 
-      {invitations && invitations.length > 0 && (
+        {/* Dialogs for member management */}
+        {editingMember && showChangeRoleDialog && (
+          <ChangeRoleDialog
+            open={showChangeRoleDialog}
+            onOpenChange={setShowChangeRoleDialog}
+            member={editingMember}
+            currentRole={editingMember.role}
+            onUpdateRole={async (newRole) => {
+              try {
+                await updateTeamMemberRoleMutation({ teamId, userId: editingMember.userId, role: newRole });
+                toast.success("Member role updated successfully!");
+                setShowChangeRoleDialog(false);
+                setEditingMember(null);
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Failed to update role");
+              }
+            }}
+          />
+        )}
+
+        {editingMember && showRemoveMemberDialog && (
+          <RemoveMemberDialog
+            open={showRemoveMemberDialog}
+            onOpenChange={setShowRemoveMemberDialog}
+            memberEmail={editingMember.email}
+            onConfirmRemove={async () => {
+              try {
+                await removeTeamMemberMutation({ teamId, userId: editingMember.userId });
+                toast.success("Member removed successfully!");
+                setShowRemoveMemberDialog(false);
+                setEditingMember(null);
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Failed to remove member");
+              }
+            }}
+          />
+        )}
+
+
+      {invitations && invitations.filter(inv => inv.status === "pending").length > 0 && (team.userRole === "owner" || team.userRole === "admin") && (
         <Card>
           <CardHeader>
             <CardTitle>Pending Invitations</CardTitle>
@@ -529,12 +804,81 @@ function TeamManagement({ teamId }: TeamManagementProps) {
                         {invitation.role}
                       </p>
                     </div>
-                    <Badge variant="outline">Pending</Badge>
+                    <div className="flex space-x-2">
+                        {(team.userRole === "owner" || team.userRole === "admin") && (
+                            <>
+                                <Button variant="outline" size="sm" onClick={async () => {
+                                    try {
+                                        await resendInvitationMutation({ invitationId: invitation._id as Id<"teamInvitations">});
+                                        toast.success("Invitation resent!");
+                                    } catch (error) {
+                                        toast.error(error instanceof Error ? error.message : "Failed to resend invitation");
+                                    }
+                                }}>Resend</Button>
+                                <Button variant="ghost" size="sm" onClick={async () => {
+                                    try {
+                                        await cancelInvitationMutation({ invitationId: invitation._id as Id<"teamInvitations">});
+                                        toast.success("Invitation cancelled!");
+                                    } catch (error) {
+                                        toast.error(error instanceof Error ? error.message : "Failed to cancel invitation");
+                                    }
+                                }}>Cancel</Button>
+                            </>
+                        )}
+                    </div>
                   </div>
                 ))}
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Danger Zone */}
+      {team.userRole === 'owner' && (
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="destructive" onClick={() => setShowDeleteTeamDialog(true)}>
+              Delete Team
+            </Button>
+            <p className="text-sm text-muted-foreground mt-2">
+              Permanently delete this team and all its data. This action cannot be undone.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {showDeleteTeamDialog && (
+        <Dialog open={showDeleteTeamDialog} onOpenChange={setShowDeleteTeamDialog}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Delete Team: {team.name}?</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to permanently delete this team? All associated data, including members, invitations, and (eventually) posts, will be removed. This action cannot be undone.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowDeleteTeamDialog(false)}>Cancel</Button>
+                    <Button variant="destructive" onClick={async () => {
+                        try {
+                            await deleteTeamMutation({ teamId });
+                            toast.success(`Team "${team.name}" deleted successfully.`);
+                            setShowDeleteTeamDialog(false);
+                            // Potentially redirect or update state to remove the team from UI
+                            // For now, user will need to refresh or navigate away.
+                            // A better UX would be to call a method passed from parent to deselect teamId
+                            redirectToDashboard(); // Simple redirect for now
+                        } catch (error) {
+                            toast.error(error instanceof Error ? error.message : "Failed to delete team");
+                        }
+                    }}>
+                        Delete Team
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
       )}
     </div>
   );
