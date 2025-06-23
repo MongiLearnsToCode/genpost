@@ -36,6 +36,7 @@ export const createOrUpdateUser = mutation({
         firstName: args.firstName,
         lastName: args.lastName,
         imageUrl: args.imageUrl,
+        onboardingCompleted: false, // Initialize onboarding status
         createdAt: now,
         updatedAt: now,
       });
@@ -108,6 +109,39 @@ export const updateUser = mutation({
       firstName: args.firstName,
       lastName: args.lastName,
       imageUrl: args.imageUrl,
+      updatedAt: Date.now(),
+    });
+
+    return user._id;
+  },
+});
+
+// Mark onboarding as complete for the current user
+export const markOnboardingComplete = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized: No user identity found.");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found in database.");
+    }
+
+    if (user.onboardingCompleted) {
+      // Optional: prevent re-marking or just allow it
+      // console.log("Onboarding already marked as complete for user:", user._id);
+      return user._id;
+    }
+
+    await ctx.db.patch(user._id, {
+      onboardingCompleted: true,
       updatedAt: Date.now(),
     });
 

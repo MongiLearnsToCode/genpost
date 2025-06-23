@@ -1,7 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { ProtectedPage } from "@/components/auth/protected-page";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 import { UserButton } from "@clerk/nextjs";
 
 export default function DashboardPage() {
@@ -14,6 +18,42 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { getUserDisplayName, getUserEmail } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const hasAccounts = useQuery(api.socialAccounts.hasConnectedSocialAccounts);
+
+  useEffect(() => {
+    const isCurrentUserLoaded = currentUser !== undefined;
+    const isHasAccountsLoaded = hasAccounts !== undefined;
+
+    if (isCurrentUserLoaded && isHasAccountsLoaded) {
+      if (
+        currentUser &&
+        (currentUser.onboardingCompleted === false || currentUser.onboardingCompleted == null) &&
+        hasAccounts === false &&
+        pathname !== "/onboarding/connect-accounts" // Avoid redirect loop if already there
+      ) {
+        router.replace("/onboarding/connect-accounts");
+      }
+    }
+  }, [currentUser, hasAccounts, router, pathname]);
+
+
+  // Display loading state or a simplified view if data is not yet loaded
+  // to prevent brief flash of dashboard before potential redirect.
+  if (currentUser === undefined || hasAccounts === undefined) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        Loading dashboard...
+      </div>
+    );
+  }
+
+  // If onboarding is required and we are about to redirect,
+  // maybe show nothing or a more specific loading message.
+  // For now, the useEffect will handle the redirect.
 
   return (
     <div className="min-h-screen bg-gray-50">

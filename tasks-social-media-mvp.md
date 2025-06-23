@@ -5,7 +5,8 @@
 - `app/layout.tsx` - Root layout with Clerk authentication provider and global styles
 - `app/(auth)/sign-in/[[...sign-in]]/page.tsx` - Clerk sign-in page component
 - `app/(auth)/sign-up/[[...sign-up]]/page.tsx` - Clerk sign-up page component
-- `app/(dashboard)/page.tsx` - Main dashboard with calendar interface
+- `src/app/(dashboard)/dashboard/page.tsx` - Main dashboard page, includes logic for redirecting new users to onboarding.
+- `src/app/(dashboard)/onboarding/connect-accounts/page.tsx` - Page for guiding new users to connect social accounts.
 - `app/(dashboard)/create/page.tsx` - Post creation page with mode selection
 - `app/(dashboard)/analytics/page.tsx` - Analytics dashboard component
 - `app/(dashboard)/history/page.tsx` - Post history and management interface
@@ -32,12 +33,12 @@
 - `lib/analytics/data-processor.ts` - Analytics data aggregation and calculations
 - `lib/utils/timezone.ts` - Timezone detection and conversion utilities
 - `lib/utils/export.ts` - Data export functionality (CSV, Google Docs)
-- `convex/schema.ts` - Database schema definitions with teams, teamMemberships, and teamInvitations tables
-- `convex/users.ts` - User management Convex functions
+- `convex/schema.ts` - Database schema definitions (updated users table for onboarding).
+- `convex/users.ts` - User management Convex functions (updated for onboarding status, added markOnboardingComplete).
 - `convex/teams.ts` - Complete team CRUD operations, member management functions, and role-based access controls (added deleteTeam, reviewed RBAC).
 - `convex/invitations.ts` - Team invitation system with token-based invites, acceptance/decline (reviewed RBAC).
 - `convex/posts.ts` - Post CRUD operations Convex functions (placeholder, file does not exist yet)
-- `convex/social-accounts.ts` - Social platform account management
+- `convex/socialAccounts.ts` - Convex functions for managing social account connections (created with initial queries for onboarding).
 - `convex/analytics.ts` - Analytics data storage and retrieval
 - `convex/scheduling.ts` - Scheduling queue management functions
 - `src/app/(dashboard)/teams/page.tsx` - Teams management interface with creation, invitation, and role-based UI controls for team/member/invitation management.
@@ -64,7 +65,7 @@
 
 ## Tasks
 
-- [ ] 1.0 Authentication & User Management Setup
+- [x] 1.0 Authentication & User Management Setup
   - [x] 1.1 Configure Clerk authentication with Next.js App Router
   - [x] 1.2 Create sign-in and sign-up pages using Clerk components
   - [x] 1.3 Set up middleware for route protection and auth state management
@@ -72,7 +73,7 @@
   - [x] 1.5 Create user profile management interface
   - [x] 1.6 Set up Convex schema for users and team relationships
   - [x] 1.7 Implement role-based access for basic team sharing
-  - [ ] 1.8 Add user onboarding flow with guided social account connection
+  - [x] 1.8 Add user onboarding flow with guided social account connection
 
 - [ ] 2.0 Social Platform Integration & OAuth Implementation
   - [ ] 2.1 Set up Instagram Basic Display API and Instagram Graph API integration

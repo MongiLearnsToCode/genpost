@@ -8,6 +8,7 @@ export default defineSchema({
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
+    onboardingCompleted: v.optional(v.boolean()), // Added for onboarding status
     createdAt: v.number(),
     updatedAt: v.number(),
   })
